@@ -32,7 +32,7 @@ var inlineReplace = /url\(('|")?([^\)'"]+)('|")?\)/i;
 /*
  * Define our selectors for elements to target.
  */
-var selector = '[data-rjs]';
+var selector = 'img';
 
 /*
  * Define the attribute we'll use to mark an image as having been processed.
@@ -74,8 +74,8 @@ function chooseCap(cap) {
      * user provided, we'll use what the user provided.
      */
   } else {
-      return numericCap;
-    }
+    return numericCap;
+  }
 }
 
 /**
@@ -153,14 +153,10 @@ function setSourceIfAvailable(image, retinaURL) {
  * @return {undefined}
  */
 function dynamicSwapImage(image, src) {
-  var rjs = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+  var rjs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
 
   var cap = chooseCap(rjs);
-
-  /*
-   * Don't do anything if the cap is less than 2 or there is no src.
-   */
-  if (src && cap > 1) {
+  if (environment > 1 && src && cap > 1) {
     var newSrc = src.replace(srcReplace, '@' + cap + 'x$1');
     setSourceIfAvailable(image, newSrc);
   }
@@ -226,7 +222,7 @@ function retina(images) {
     if (!img.getAttribute(processedAttr)) {
       var isImg = img.nodeName.toLowerCase() === 'img';
       var src = isImg ? img.getAttribute('src') : cleanBgImg(img);
-      var rjs = img.getAttribute('data-rjs');
+      var rjs = img.getAttribute('data-rjs') || '2';
       var rjsIsNumber = !isNaN(parseInt(rjs, 10));
 
       /*
@@ -246,7 +242,9 @@ function retina(images) {
  * If this environment has `window`, activate the plugin.
  */
 if (hasWindow) {
-  window.addEventListener('load', retina);
+  window.onload = function () {
+    retina(false);
+  };
   window.retinajs = retina;
 }
 
